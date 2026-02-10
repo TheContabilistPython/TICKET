@@ -1,0 +1,15 @@
+[
+  {
+    "id": "1770666124206",
+    "email": "eduardoap",
+    "password": "1234",
+    "role": "ti"
+  },
+  {
+    "id": "1770668712255",
+    "email": "patricia",
+    "password": "1234",
+    "role": "ti",
+    "contact_email": "patricia@prontasc.com.br"
+  }
+]

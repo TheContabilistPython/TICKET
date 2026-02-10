@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ticket Suporte</title>
+  </head>
+  <body>
+    <div id="root" style="padding: 20px; font-family: sans-serif; color: #666;">
+      <h2>Application Loading...</h2>
+      <p>If this message persists, the application failed to start.</p>
+    </div>
+    <script>
+      window.onerror = function(message, source, lineno, colno, error) {
+        var errorDiv = document.createElement('div');
+        errorDiv.style.position = 'fixed';
+        errorDiv.style.top = '0';
+        errorDiv.style.left = '0';
+        errorDiv.style.right = '0';
+        errorDiv.style.backgroundColor = '#fee';
+        errorDiv.style.borderBottom = '2px solid #ed1c24';
+        errorDiv.style.color = '#c00';
+        errorDiv.style.padding = '20px';
+        errorDiv.style.zIndex = '9999';
+        errorDiv.style.fontFamily = 'monospace';
+        errorDiv.style.fontSize = '14px';
+        errorDiv.innerText = 'Global Error: ' + message + '\nFile: ' + source + ':' + lineno;
+        document.body.appendChild(errorDiv);
+        console.error('Global Error caught:', error);
+      };
+    </script>
+    <script type="module" src="/src/main.jsx"></script>
+
+
+  </body>
+</html>
