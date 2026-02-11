@@ -42,12 +42,35 @@ export default function TicketCard({ ticket, onStatusUpdate }) {
   };
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
+    <div className={`
+      relative p-6 rounded-lg shadow-sm border hover:shadow-md transition-all duration-300
+      ${ticket.priority 
+         ? 'bg-red-50/30 border-red-300 ring-1 ring-red-200' 
+         : 'bg-white border-gray-200'}
+    `}>
+      {ticket.priority && (
+          <div className="absolute top-0 right-0 w-3 h-3 bg-red-500 rounded-bl-lg rounded-tr-lg animate-ping opacity-75"></div>
+      )}
+      
+      {/* Subject Line */}
+      {ticket.title && (
+          <div className="mb-4 pb-2 border-b border-gray-100">
+             <h3 className="text-lg font-bold text-gray-800 leading-tight">{ticket.title}</h3>
+          </div>
+      )}
+
       <div className="flex justify-between items-start mb-4">
         <div className="flex items-center">
           <User className="h-10 w-10 text-gray-400 bg-gray-100 rounded-full p-2" />
           <div className="ml-3">
-            <h3 className="text-lg font-medium text-gray-900">{ticket.nome_usuario}</h3>
+            <div className="flex items-center gap-2">
+                <h3 className="text-sm font-medium text-gray-900">{ticket.nome_usuario}</h3>
+                {ticket.priority && (
+                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-red-100 text-red-800 border border-red-200 animate-pulse">
+                        URGENTE
+                    </span>
+                )}
+            </div>
             <p className="text-sm text-gray-500 flex items-center">
               <Clock className="w-3 h-3 mr-1" />
               {new Date(ticket.created_at).toLocaleString()}

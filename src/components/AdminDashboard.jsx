@@ -117,7 +117,14 @@ export default function AdminDashboard() {
     if (error) {
       console.error('Erro ao buscar tickets:', error)
     } else {
-      setTickets(data)
+      // Sort by Priority (True first) then Date
+      const sorted = [...data].sort((a, b) => {
+          if (a.priority === b.priority) {
+              return new Date(b.created_at) - new Date(a.created_at);
+          }
+          return a.priority ? -1 : 1;
+      });
+      setTickets(sorted)
     }
     setLoading(false)
   }

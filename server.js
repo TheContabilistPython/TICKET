@@ -112,7 +112,7 @@ const sendNewTicketEmail = async (ticket) => {
                <p><strong>Usuário:</strong> ${ticket.email}</p>
                <p><strong>Setor:</strong> ${ticket.setor}</p>
                <p><strong>Descrição:</strong><br>${ticket.description}</p>
-               <p><a href="http://localhost:3000">Acessar Sistema</a></p>`
+               <p><a href="http://192.168.1.25:3000">Acessar Sistema</a></p>`
     };
 
     try {
@@ -191,8 +191,9 @@ app.post('/api/users', (req, res) => {
             return res.status(400).json({ error: 'Usuário já existe' });
         }
         
+        const randomSuffix = Math.floor(Math.random() * 900 + 100).toString(); // 100-999
         const newUser = {
-            id: Date.now().toString(),
+            id: `${email}_${randomSuffix}`,
             email,
             password,
             role,
@@ -458,6 +459,6 @@ app.get(/(.*)/, (req, res) => {
     res.sendFile(path.join(__dirname, 'dist', 'index.html'));
 });
 
-app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Server running on http://localhost:${PORT} and http://192.168.1.25:${PORT}`);
 });

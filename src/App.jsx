@@ -4,6 +4,7 @@ import AdminDashboard from './components/AdminDashboard'
 import Login from './pages/Login'
 import NotificationManager from './components/NotificationManager'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
+import { ToastProvider } from './contexts/ToastContext'
 import { LogOut } from 'lucide-react'
 import iconPetroleum from './assets/branding/icon_petroleum.png'
 
@@ -66,27 +67,29 @@ function NavBar() {
 function App() {
   return (
     <AuthProvider>
-      <Router>
-        <div className="min-h-screen bg-gray-50 flex flex-col">
-          <NavBar />
-          <NotificationManager />
-          <main className="flex-grow py-10">
-            <Routes>
-              <Route path="/login" element={<Login />} />
-              <Route path="/" element={
-                <PrivateRoute>
-                  <TicketForm />
-                </PrivateRoute>
-              } />
-              <Route path="/admin" element={
-                <PrivateRoute requiredRole="ti">
-                  <AdminDashboard />
-                </PrivateRoute>
-              } />
-            </Routes>
-          </main>
-        </div>
-      </Router>
+      <ToastProvider>
+        <Router>
+          <div className="min-h-screen bg-gray-50 flex flex-col">
+            <NavBar />
+            <NotificationManager />
+            <main className="flex-grow py-10">
+              <Routes>
+                <Route path="/login" element={<Login />} />
+                <Route path="/" element={
+                  <PrivateRoute>
+                    <TicketForm />
+                  </PrivateRoute>
+                } />
+                <Route path="/admin" element={
+                  <PrivateRoute requiredRole="ti">
+                    <AdminDashboard />
+                  </PrivateRoute>
+                } />
+              </Routes>
+            </main>
+          </div>
+        </Router>
+      </ToastProvider>
     </AuthProvider>
   )
 }

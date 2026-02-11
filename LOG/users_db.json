@@ -11,5 +11,12 @@
     "password": "1234",
     "role": "ti",
     "contact_email": "patricia@prontasc.com.br"
+  },
+  {
+    "id": "1770745449584",
+    "email": "eric",
+    "password": "1234",
+    "role": "funcionario",
+    "contact_email": "contabil7@prontasc.com.br"
   }
 ]

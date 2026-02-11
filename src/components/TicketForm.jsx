@@ -2,9 +2,11 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabaseClient'
 import { Upload, X, FileText, Bell } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
+import { useToast } from '../contexts/ToastContext'
 
 export default function TicketForm() {
   const { user } = useAuth()
+  const { addToast } = useToast()
   const [loading, setLoading] = useState(false)
   const [tickets, setTickets] = useState([]); // Histórico
   const [now, setNow] = useState(new Date());
@@ -25,7 +27,7 @@ export default function TicketForm() {
         .eq('id', ticket.id);
       
       if (!error) {
-          alert('TI notificada!');
+          addToast({ message: 'TI notificada!', type: 'success' });
           // Refresh tickets locally or wait for realtime
           setTickets(prev => prev.map(t => 
              t.id === ticket.id 
@@ -33,7 +35,7 @@ export default function TicketForm() {
              : t
           ));
       } else {
-          alert('Erro ao cutucar.');
+          addToast({ message: 'Erro ao cutucar.', type: 'error' });
       }
   };
 
@@ -139,6 +141,18 @@ export default function TicketForm() {
     setFormData(prev => ({ ...prev, [name]: value }))
   }
 
+  const handlePriorityChange = (e) => {
+    const checked = e.target.checked;
+    if (checked) {
+        addToast({
+            message: "Ao marcar esta caixa você está sugerindo que a solicitação tem urgência MÁXIMA. Favor, usar moderadamente.",
+            type: "warning",
+            duration: 8000
+        });
+    }
+    setFormData(prev => ({ ...prev, priority: checked }));
+  }
+
   const handleFileChange = (e) => {
     if (e.target.files && e.target.files.length > 0) {
       const newFiles = Array.from(e.target.files);
@@ -215,6 +229,8 @@ export default function TicketForm() {
           email: user.email,
           nome_usuario: formData.nome_usuario,
           setor: formData.setor,
+          title: formData.assunto,
+          priority: formData.priority,
           descricao_problema: formData.descricao_problema,
           tentativas_anteriores: formData.tentativas_anteriores,
           screenshot_url: screenshot_url_value,
@@ -223,11 +239,12 @@ export default function TicketForm() {
 
       if (error) throw error
 
-      alert('Ticket enviado com sucesso!')
+      addToast({ message: 'Ticket enviado com sucesso!', type: 'success' })
       fetchMyTickets();
       setFormData(prev => ({
         ...prev,
         setor: '',
+        assunto: '',
         descricao_problema: '',
         tentativas_anteriores: '',
         screenshots: []
@@ -236,7 +253,7 @@ export default function TicketForm() {
 
     } catch (error) {
       console.error('Erro ao enviar ticket:', error)
-      alert('Erro ao enviar ticket. Tente novamente.')
+      addToast({ message: 'Erro ao enviar ticket. Tente novamente.', type: 'error' })
     } finally {
       setLoading(false)
     }
@@ -274,6 +291,19 @@ export default function TicketForm() {
             <option value="folha">Folha</option>
             <option value="societario">Societário</option>
           </select>
+        </div>
+
+        <div>
+           <label className="block text-sm font-medium text-gray-700">Assunto</label>
+           <input
+             type="text"
+             name="assunto"
+             required
+             value={formData.assunto || ''}
+             onChange={handleChange}
+             placeholder="Resumo curto do problema"
+             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#367588] focus:ring-[#367588] border p-2"
+           />
         </div>
 
         <div>
@@ -347,6 +377,19 @@ export default function TicketForm() {
             </div>
           )}
           <p className="text-xs text-gray-500 mt-2 text-right">{previewUrls.length} arquivo(s) selecionado(s)</p>
+        </div>
+
+        <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-md my-4">
+            <input 
+                type="checkbox" 
+                id="priority" 
+                checked={formData.priority || false} 
+                onChange={handlePriorityChange}
+                className="w-5 h-5 text-red-600 focus:ring-red-500 border-gray-300 rounded cursor-pointer"
+            />
+            <label htmlFor="priority" className="text-sm font-bold text-red-800 cursor-pointer">
+                Entrega para cliente na data de HOJE (prioridade)
+            </label>
         </div>
 
         <button

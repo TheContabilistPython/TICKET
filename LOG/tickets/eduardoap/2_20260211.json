@@ -1,0 +1,17 @@
+{
+  "id": "2_20260211",
+  "email": "eduardoap",
+  "nome_usuario": "eduardoap",
+  "setor": "fiscal",
+  "descricao_problema": "teste",
+  "tentativas_anteriores": "teste1",
+  "screenshot_url": "[\"/uploads/eduardoap_1770813912965/2512_Livros_Fiscais.pdf\"]",
+  "status": "resolvido",
+  "upload_folder_ref": "1770813912965",
+  "created_at": "2026-02-11T12:45:13.053Z",
+  "accepted_at": "2026-02-11T12:51:03.109Z",
+  "resolved_at": "2026-02-11T12:51:12.814Z",
+  "last_poke_at": null,
+  "poke_count": 0,
+  "resolution_notes": "feito"
+}
