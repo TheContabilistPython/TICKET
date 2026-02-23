@@ -85,10 +85,8 @@ const sendResolutionEmail = async (userEmail, ticketId, resolutionNotes) => {
     };
 
     try {
-        // If we don't have real credentials, we just log "sent"
         if (!process.env.SMTP_HOST && !process.env.SMTP_USER) {
             console.log(`[EMAIL MOCK] Email content: ${JSON.stringify(mailOptions, null, 2)}`);
-            console.log(`[EMAIL MOCK] To enable real emails, configure SMTP_HOST, SMTP_USER, SMTP_PASS variables.`);
             return;
         }
         
@@ -99,19 +97,50 @@ const sendResolutionEmail = async (userEmail, ticketId, resolutionNotes) => {
     }
 }
 
+const sendAcceptEmail = async (userEmail, ticketId, notes, deadline) => {
+    if (!userEmail) return;
+    console.log(`[EMAIL] Sending accept email to ${userEmail} for ticket ${ticketId}`);
+
+    const mailOptions = {
+        from: `"Suporte TI" <${process.env.SMTP_USER}>`,
+        to: userEmail,
+        subject: `Chamado #${ticketId} em Andamento`,
+        text: `Olá,\n\nSeu chamado #${ticketId} foi aceito e está em andamento.\n\nObservação: ${notes}\nPrazo Estimado: ${deadline}\n\nAtenciosamente,\nEquipe de TI`,
+        html: `<p>Olá,</p><p>Seu chamado <strong>#${ticketId}</strong> foi aceito e está sendo trabalhado.</p>
+               <p><strong>Observação:</strong><br>${notes}</p>
+               <p><strong>Prazo Estimado de Conclusão:</strong><br>${deadline}</p>
+               <p>Atenciosamente,<br>Equipe de TI</p>`
+    };
+
+    try {
+        if (!process.env.SMTP_HOST && !process.env.SMTP_USER) {
+            console.log(`[EMAIL MOCK] Accept Email: ${JSON.stringify(mailOptions, null, 2)}`);
+            return;
+        }
+        const info = await transporter.sendMail(mailOptions);
+        console.log('[EMAIL] Accept notification sent: %s', info.messageId);
+    } catch (error) {
+        console.error('[EMAIL] Error sending accept email:', error);
+    }
+}
+
 const sendNewTicketEmail = async (ticket) => {
-    console.log(`[EMAIL] Sending new ticket notification to Support.`);
+    console.log(`[EMAIL] Sending new ticket notification.`);
+
+    const recipient = ticket.is_task ? 'societario1@prontasc.com.br' : 'suporte@prontasc.com.br';
+    const subjectPrefix = ticket.is_task ? '[TAREFA SOCIETÁRIO]' : 'Novo Chamado';
 
     const mailOptions = {
         from: `"Sistema de Chamados" <${process.env.SMTP_USER}>`,
-        to: 'suporte@prontasc.com.br',
-        subject: `Novo Chamado #${ticket.id} - ${ticket.title || 'Sem título'}`,
-        text: `Um novo chamado foi aberto.\n\nID: ${ticket.id}\nUsuário: ${ticket.email}\nSetor: ${ticket.setor}\nDescrição:\n${ticket.description}\n\nAcesse o sistema para responder.`,
+        to: recipient,
+        subject: `${subjectPrefix} #${ticket.id} - ${ticket.title || 'Sem título'}`,
+        text: `Um novo chamado foi aberto.\n\nID: ${ticket.id}\nTipo: ${ticket.is_task ? 'TAREFA' : 'CHAMADO'}\nUsuário: ${ticket.email}\nSetor: ${ticket.setor}\nDescrição:\n${ticket.description || ticket.descricao_problema}\n\nAcesse o sistema para responder.`,
         html: `<h2>Novo Chamado Aberto</h2>
                <p><strong>ID:</strong> ${ticket.id}</p>
+               <p><strong>Tipo:</strong> ${ticket.is_task ? '<span style="color:blue;font-weight:bold;">TAREFA</span>' : 'CHAMADO'}</p>
                <p><strong>Usuário:</strong> ${ticket.email}</p>
                <p><strong>Setor:</strong> ${ticket.setor}</p>
-               <p><strong>Descrição:</strong><br>${ticket.description}</p>
+               <p><strong>Descrição:</strong><br>${ticket.description || ticket.descricao_problema}</p>
                <p><a href="http://192.168.1.25:3000">Acessar Sistema</a></p>`
     };
 
@@ -162,7 +191,7 @@ app.post('/api/auth/login', (req, res) => {
         
         if (user) {
              return res.json({ 
-                user: { id: user.id, email: user.email, user_metadata: { role: user.role } }, 
+                user: { id: user.id, email: user.email, user_metadata: { role: user.role, only_tasks: user.only_tasks } }, 
                 session: { access_token: 'valid-jwt-token' } 
             });
         }
@@ -182,7 +211,7 @@ app.post('/api/auth/login', (req, res) => {
 });
 
 app.post('/api/users', (req, res) => {
-    const { email, password, role, contact_email } = req.body;
+    const { email, password, role, contact_email, only_tasks } = req.body;
     if (!email || !password || !role) return res.status(400).json({error: 'Faltam dados'});
     
     try {
@@ -197,7 +226,8 @@ app.post('/api/users', (req, res) => {
             email,
             password,
             role,
-            contact_email: contact_email || ''
+            contact_email: contact_email || '',
+            only_tasks: !!only_tasks
         };
         
         users.push(newUser);
@@ -408,6 +438,23 @@ app.patch('/api/tickets/:id', (req, res) => {
         const now = new Date().toISOString();
         if (updates.status === 'aceito' && !current.accepted_at) {
             updates.accepted_at = now;
+
+             // Notify Accepted
+             try {
+                if (fs.existsSync(LOGIN_FILE)) {
+                    const users = JSON.parse(fs.readFileSync(LOGIN_FILE));
+                    const owner = users.find(u => u.email === current.email);
+                    if (owner && owner.contact_email) {
+                        const acceptNotes = updates.accept_notes || 'Sem observações.';
+                        const deadline = updates.deadline ? new Date(updates.deadline).toLocaleString() : 'Não informado';
+                        
+                        // Reuse or create sendAcceptEmail function
+                        sendAcceptEmail(owner.contact_email, req.params.id, acceptNotes, deadline);
+                    }
+                }
+            } catch (err) {
+                console.error('[EMAIL] Failed to fetch user for accept notification:', err);
+            }
         }
         if (updates.status === 'resolvido' && !current.resolved_at) {
             updates.resolved_at = now;

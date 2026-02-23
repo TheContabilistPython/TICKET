@@ -37,7 +37,7 @@ function NavBar() {
           <div className="flex items-center">
             <div className="flex-shrink-0 flex items-center">
                 <img className="h-8 w-8 mr-2" src={iconPetroleum} alt="Logo" />
-                <span className="text-white font-bold text-xl">Suporte Interno</span>
+                <span className="text-white font-bold text-xl">Help+</span>
             </div>
             <div className="hidden md:block">
               <div className="ml-10 flex items-baseline space-x-4">

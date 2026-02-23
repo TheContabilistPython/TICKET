@@ -18,5 +18,20 @@
     "password": "1234",
     "role": "funcionario",
     "contact_email": "contabil7@prontasc.com.br"
+  },
+  {
+    "id": "thamires_809",
+    "email": "thamires",
+    "password": "1234",
+    "role": "funcionario",
+    "contact_email": "fiscal1@prontasc.com.br"
+  },
+  {
+    "id": "anald_679",
+    "email": "anald",
+    "password": "1234",
+    "role": "ti",
+    "contact_email": "societario1@prontasc.com.br",
+    "only_tasks": true
   }
 ]

@@ -1,0 +1,18 @@
+{
+  "id": "19_20260223",
+  "email": "eduardoap",
+  "nome_usuario": "eduardoap",
+  "setor": "contabil",
+  "title": "tarefa x",
+  "is_task": true,
+  "descricao_problema": "tarefa y ",
+  "tentativas_anteriores": "gremio",
+  "screenshot_url": null,
+  "status": "pendente",
+  "upload_folder_ref": "1771866512550",
+  "created_at": "2026-02-23T17:08:32.553Z",
+  "accepted_at": null,
+  "resolved_at": null,
+  "last_poke_at": null,
+  "poke_count": 0
+}

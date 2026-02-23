@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
+import { useAuth } from '../contexts/AuthContext'
 import TicketCard from './TicketCard'
 import StatsDashboard from './StatsDashboard'
 import { Filter, UserPlus, X, BarChart3, LayoutDashboard, Users, Trash2 } from 'lucide-react'
 
 export default function AdminDashboard() {
+  const { user: currentUser } = useAuth()
   const [tickets, setTickets] = useState([])
   const [filterSetor, setFilterSetor] = useState('todos')
   const [loading, setLoading] = useState(true)
@@ -14,7 +16,7 @@ export default function AdminDashboard() {
   const [showUserModal, setShowUserModal] = useState(false);
   const [showUsersListModal, setShowUsersListModal] = useState(false);
   const [usersList, setUsersList] = useState([]);
-  const [newUser, setNewUser] = useState({ email: '', password: '', role: 'funcionario', contact_email: '' });
+  const [newUser, setNewUser] = useState({ email: '', password: '', role: 'funcionario', contact_email: '', only_tasks: false });
   const [creatingUser, setCreatingUser] = useState(false);
 
   const fetchUsers = async () => {
@@ -75,7 +77,7 @@ export default function AdminDashboard() {
           if (res.ok) {
               alert('Usuário criado com sucesso!');
               setShowUserModal(false);
-              setNewUser({ email: '', password: '', role: 'funcionario', contact_email: '' });
+              setNewUser({ email: '', password: '', role: 'funcionario', contact_email: '', only_tasks: false });
           } else {
               alert(data.error || 'Erro ao criar usuário');
           }
@@ -150,6 +152,10 @@ export default function AdminDashboard() {
   }
 
   const filteredTickets = tickets.filter(ticket => {
+    // If user is restricted to tasks only
+    if (currentUser?.user_metadata?.only_tasks && !ticket.is_task) {
+        return false;
+    }
     return filterSetor === 'todos' || ticket.setor === filterSetor
   })
 
@@ -209,25 +215,6 @@ export default function AdminDashboard() {
                 <UserPlus className="w-4 h-4" />
                 <span>Novo Usuário</span>
              </button>
-
-            <div className="flex bg-white p-3 rounded-lg shadow-sm space-x-4 flex-1 md:flex-none overflow-x-auto">
-              <div className="flex items-center space-x-2 min-w-[150px]">
-                <Filter className="w-5 h-5 text-gray-500" />
-                <span className="text-sm font-medium text-gray-700">Filtrar Setor:</span>
-              </div>
-              
-              <select 
-                value={filterSetor}
-                onChange={(e) => setFilterSetor(e.target.value)}
-                className="border-gray-300 rounded-md text-sm focus:ring-[#367588] focus:border-[#367588] border p-1"
-              >
-                <option value="todos">Todos Setores</option>
-                <option value="fiscal">Fiscal</option>
-                <option value="contabil">Contábil</option>
-                <option value="folha">Folha</option>
-                <option value="societario">Societário</option>
-              </select>
-            </div>
         </div>
       </div>
 
@@ -286,6 +273,20 @@ export default function AdminDashboard() {
                               <option value="ti">TI (Atende Chamados)</option>
                           </select>
                       </div>
+
+                      <div className="flex items-center gap-2 bg-gray-50 p-2 rounded border">
+                          <input 
+                              type="checkbox" 
+                              id="only_tasks"
+                              checked={newUser.only_tasks || false}
+                              onChange={e => setNewUser({...newUser, only_tasks: e.target.checked})}
+                              className="w-4 h-4 text-[#367588] rounded"
+                          />
+                          <label htmlFor="only_tasks" className="text-sm text-gray-700 cursor-pointer select-none">
+                              Receber <strong>APENAS</strong> chamados do tipo <strong>Tarefa</strong>
+                          </label>
+                      </div>
+
                       <button 
                         type="submit" 
                         disabled={creatingUser}

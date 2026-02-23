@@ -1,0 +1,22 @@
+{
+  "id": "16_20260223",
+  "email": "eric",
+  "nome_usuario": "eric",
+  "setor": "contabil",
+  "title": "Saint Pablo",
+  "is_task": false,
+  "priority": true,
+  "descricao_problema": "jorge bagre",
+  "tentativas_anteriores": "gremio > inter",
+  "screenshot_url": null,
+  "status": "resolvido",
+  "upload_folder_ref": "1771846664409",
+  "created_at": "2026-02-23T11:37:44.411Z",
+  "accepted_at": "2026-02-23T11:38:13.924Z",
+  "resolved_at": "2026-02-23T16:56:34.655Z",
+  "last_poke_at": "2026-02-23T11:41:44.465Z",
+  "poke_count": 1,
+  "accept_notes": "de fato eric, gremio é maior que inter",
+  "deadline": "2026-02-23T09:30",
+  "resolution_notes": "why always me?"
+}

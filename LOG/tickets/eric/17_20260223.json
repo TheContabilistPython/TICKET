@@ -1,0 +1,22 @@
+{
+  "id": "17_20260223",
+  "email": "eric",
+  "nome_usuario": "eric",
+  "setor": "contabil",
+  "title": "Saint Pablo",
+  "is_task": false,
+  "priority": true,
+  "descricao_problema": "Jorge bagrissimo",
+  "tentativas_anteriores": "Gremio is in fact better than inter",
+  "screenshot_url": "[\"/uploads/eric_1771846943457/Marcelinho_-_bio_meds_-_Relat_rio_Cont_bil_-_Concilia__o_Folha.pdf\"]",
+  "status": "resolvido",
+  "upload_folder_ref": "1771846943457",
+  "created_at": "2026-02-23T11:42:23.550Z",
+  "accepted_at": "2026-02-23T11:43:02.466Z",
+  "resolved_at": "2026-02-23T16:56:27.742Z",
+  "last_poke_at": null,
+  "poke_count": 0,
+  "accept_notes": "capadócia, bom dia!",
+  "deadline": "2026-02-23T09:30",
+  "resolution_notes": "jorge bagre"
+}

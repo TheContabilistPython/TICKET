@@ -138,9 +138,18 @@ export default function StatsDashboard({ tickets }) {
           <h3 className="text-gray-500 text-sm uppercase font-bold">Total de Atendimentos</h3>
           <p className="text-4xl font-bold text-[#367588] mt-2">{stats.total}</p>
         </div>
-        <div className="bg-white p-6 rounded-lg shadow border-l-4 border-emerald-500">
-          <h3 className="text-gray-500 text-sm uppercase font-bold">Setor Mais Crítico</h3>
-          <p className="text-2xl font-bold text-emerald-700 mt-2 truncate">{stats.mostActiveSector}</p>
+        <div className="bg-white p-6 rounded-lg shadow border-l-4 border-emerald-500 overflow-hidden">
+          <h3 className="text-gray-500 text-sm uppercase font-bold mb-2">Tickets por Setor</h3>
+          <ul className="text-sm space-y-1">
+             { stats.sectorData.map((item, index) => (
+                 <li key={index} className="flex justify-between items-center text-gray-700">
+                     <span className="truncate max-w-[120px] font-medium" title={item.name}>
+                       {index + 1}. {item.name}
+                     </span>
+                     <span className="bg-emerald-100 text-emerald-800 px-2 rounded-full font-bold text-xs">{item.value}</span>
+                 </li>
+             ))}
+          </ul>
         </div>
         <div className="bg-white p-6 rounded-lg shadow border-l-4 border-amber-500">
           <h3 className="text-gray-500 text-sm uppercase font-bold">Média de Resolução</h3>

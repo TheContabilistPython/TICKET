@@ -31,6 +31,9 @@ export default function TicketCard({ ticket, onStatusUpdate }) {
   const [resolutionText, setResolutionText] = useState('')
 ;
   const [showResolveForm, setShowResolveForm] = useState(false);
+  const [showAcceptForm, setShowAcceptForm] = useState(false);
+  const [acceptNotes, setAcceptNotes] = useState('');
+  const [deadline, setDeadline] = useState('');
 
   const handleResolveClick = () => {
     if (showResolveForm && resolutionText.trim()) {
@@ -39,6 +42,18 @@ export default function TicketCard({ ticket, onStatusUpdate }) {
     } else {
        setShowResolveForm(true);
     }
+  };
+
+  const handleAcceptClick = () => {
+      if (showAcceptForm && (acceptNotes.trim() || deadline)) {
+          onStatusUpdate(ticket.id, 'aceito', { 
+              accept_notes: acceptNotes, 
+              deadline: deadline 
+          });
+          setShowAcceptForm(false);
+      } else {
+          setShowAcceptForm(true);
+      }
   };
 
   return (
@@ -102,6 +117,16 @@ export default function TicketCard({ ticket, onStatusUpdate }) {
             )}
             {ticket.resolved_at && (
               <div>Finalizado em: {new Date(ticket.resolved_at).toLocaleString()}</div>
+            )}
+            {ticket.accept_notes && (
+                <div className="text-blue-600 text-xs mt-1">
+                    <strong>Obs. Aceite:</strong> {ticket.accept_notes}
+                </div>
+            )}
+            {ticket.deadline && (
+                 <div className="text-red-600 text-xs font-bold mt-1">
+                     Prazo Estimado: {new Date(ticket.deadline).toLocaleString()}
+                 </div>
             )}
             {ticket.poke_count > 0 && (
                 <div className="text-yellow-600 font-semibold flex items-center mt-1">
@@ -180,22 +205,61 @@ export default function TicketCard({ ticket, onStatusUpdate }) {
       )}
 
       {onStatusUpdate && (
-        <div className="flex space-x-3 mt-4 pt-4 border-t border-gray-100">
+        <div className="flex flex-col mt-4 pt-4 border-t border-gray-100">
           {ticket.status === 'pendente' && (
-            <>
-              <button
-                onClick={() => onStatusUpdate(ticket.id, 'aceito')}
-                className="flex-1 bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700 transition-colors"
-              >
-                Aceitar Chamado
-              </button>
-              <button
-                onClick={() => onStatusUpdate(ticket.id, 'rejeitado')}
-                className="flex-1 bg-red-600 text-white px-4 py-2 rounded text-sm hover:bg-red-700 transition-colors"
-              >
-                Rejeitar
-              </button>
-            </>
+            <div className="w-full">
+               {showAcceptForm ? (
+                   <div className="flex flex-col gap-2 animate-fade-in bg-blue-50 p-3 rounded border border-blue-100 mb-2">
+                       <label className="text-xs font-bold text-blue-800">Observação ao Aceitar:</label>
+                       <textarea
+                           className="w-full p-2 border rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                           placeholder="Ex: Tarefa iniciada, aguardando..."
+                           rows={2}
+                           value={acceptNotes}
+                           onChange={(e) => setAcceptNotes(e.target.value)}
+                           autoFocus
+                       />
+                       
+                       <label className="text-xs font-bold text-blue-800 mt-1">Prazo Estimado (Opcional):</label>
+                       <input 
+                           type="datetime-local"
+                           className="w-full p-2 border rounded text-sm"
+                           value={deadline}
+                           onChange={(e) => setDeadline(e.target.value)}
+                       />
+
+                       <div className="flex gap-2 mt-2">
+                            <button
+                               onClick={handleAcceptClick}
+                               className="flex-1 bg-blue-600 text-white px-3 py-2 rounded text-sm hover:bg-blue-700 transition"
+                           >
+                               Confirmar Aceite
+                           </button>
+                           <button
+                               onClick={() => setShowAcceptForm(false)}
+                               className="px-3 py-2 bg-gray-200 text-gray-700 rounded text-sm hover:bg-gray-300"
+                           >
+                               Cancelar
+                           </button>
+                       </div>
+                   </div>
+               ) : (
+                   <div className="flex gap-2">
+                      <button
+                        onClick={() => setShowAcceptForm(true)}
+                        className="flex-1 bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700 transition-colors"
+                      >
+                        Aceitar Chamado
+                      </button>
+                      <button
+                        onClick={() => onStatusUpdate(ticket.id, 'rejeitado')}
+                        className="flex-1 bg-red-600 text-white px-4 py-2 rounded text-sm hover:bg-red-700 transition-colors"
+                      >
+                        Rejeitar
+                      </button>
+                   </div>
+               )}
+            </div>
           )}
 
           {ticket.status === 'aceito' && (

@@ -11,6 +11,37 @@ export default function TicketForm() {
   const [tickets, setTickets] = useState([]); // Histórico
   const [now, setNow] = useState(new Date());
 
+  // Pagination & Filter State
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterDateFrom, setFilterDateFrom] = useState('');
+  const [filterDateTo, setFilterDateTo] = useState('');
+  const [dateRangeError, setDateRangeError] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const ticketsPerPage = 5;
+
+  const handleDateFromChange = (e) => {
+    const from = e.target.value;
+    setFilterDateFrom(from);
+    setCurrentPage(1);
+    if (from && filterDateTo) {
+      const diff = (new Date(filterDateTo) - new Date(from)) / (1000 * 60 * 60 * 24);
+      if (diff > 31) { setDateRangeError('Intervalo máximo de 1 mês.'); }
+      else { setDateRangeError(''); }
+    } else { setDateRangeError(''); }
+  };
+
+  const handleDateToChange = (e) => {
+    const to = e.target.value;
+    setFilterDateTo(to);
+    setCurrentPage(1);
+    if (filterDateFrom && to) {
+      const diff = (new Date(to) - new Date(filterDateFrom)) / (1000 * 60 * 60 * 24);
+      if (diff > 31) { setDateRangeError('Intervalo máximo de 1 mês.'); }
+      else if (diff < 0) { setDateRangeError('Data final anterior à data inicial.'); }
+      else { setDateRangeError(''); }
+    } else { setDateRangeError(''); }
+  };
+
   useEffect(() => {
     // Update local time every minute to refresh "Poke" button state
     const timer = setInterval(() => setNow(new Date()), 60000);
@@ -84,7 +115,8 @@ export default function TicketForm() {
     setor: '',
     descricao_problema: '',
     tentativas_anteriores: '',
-    screenshots: []
+    screenshots: [],
+    is_task: false
   })
   const [previewUrls, setPreviewUrls] = useState([])
 
@@ -230,6 +262,7 @@ export default function TicketForm() {
           nome_usuario: formData.nome_usuario,
           setor: formData.setor,
           title: formData.assunto,
+          is_task: formData.is_task,
           priority: formData.priority,
           descricao_problema: formData.descricao_problema,
           tentativas_anteriores: formData.tentativas_anteriores,
@@ -247,7 +280,8 @@ export default function TicketForm() {
         assunto: '',
         descricao_problema: '',
         tentativas_anteriores: '',
-        screenshots: []
+        screenshots: [],
+        is_task: false
       }))
       setPreviewUrls([])
 
@@ -294,7 +328,21 @@ export default function TicketForm() {
         </div>
 
         <div>
-           <label className="block text-sm font-medium text-gray-700">Assunto</label>
+           <div className="flex justify-between items-center mb-1">
+              <label className="block text-sm font-medium text-gray-700">Assunto</label>
+              <div className="flex items-center gap-2 bg-gray-50 px-2 py-1 rounded border border-gray-200">
+                  <input 
+                    type="checkbox" 
+                    id="is_task"
+                    checked={formData.is_task || false} 
+                    onChange={(e) => setFormData(prev => ({ ...prev, is_task: e.target.checked }))}
+                    className="w-4 h-4 text-[#367588] focus:ring-[#367588] border-gray-300 rounded cursor-pointer"
+                  />
+                  <label htmlFor="is_task" className="text-xs text-gray-600 cursor-pointer select-none font-medium">
+                      Tarefa (Encaminhar p/ Societário)
+                  </label>
+              </div>
+           </div>
            <input
              type="text"
              name="assunto"
@@ -404,74 +452,165 @@ export default function TicketForm() {
       {tickets.length > 0 && (
         <div className="mt-10 border-t pt-6">
           <h3 className="text-xl font-bold text-gray-800 mb-4">Meus Chamados Recentes</h3>
-          <div className="space-y-4">
-            {tickets.map((ticket) => (
-              <div key={ticket.id} className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <span className={`inline-block px-2 py-1 text-xs font-semibold rounded-full mb-2 ${
-                      ticket.status === 'resolvido' ? 'bg-green-100 text-green-800' :
-                      ticket.status === 'aceito' ? 'bg-blue-100 text-blue-800' :
-                      ticket.status === 'rejeitado' ? 'bg-red-100 text-red-800' :
-                      'bg-yellow-100 text-yellow-800'
-                    }`}>
-                      {ticket.status ? ticket.status.toUpperCase() : 'PENDENTE'}
-                    </span>
-                    <p className="text-sm text-gray-600 font-medium">Setor: {ticket.setor}</p>
-                    <p className="mt-1 text-gray-800">{ticket.descricao_problema}</p>
-                    {(ticket.accepted_at || ticket.resolved_at) && (
-                      <div className="mt-2 text-xs text-gray-500 space-y-1">
-                        {ticket.accepted_at && (
-                          <div>Aceito em: {new Date(ticket.accepted_at).toLocaleString()}</div>
-                        )}
-                        {ticket.resolved_at && (
-                          <div>Finalizado em: {new Date(ticket.resolved_at).toLocaleString()}</div>
-                        )}
-                      </div>
-                    )}
 
-                    {ticket.resolution_notes && (
-                      <div className="mt-3 bg-green-100 p-2 rounded text-sm text-green-900 border border-green-200">
+          {/* Filters */}
+          <div className="flex flex-col gap-3 mb-4">
+            <input
+              type="text"
+              placeholder="Buscar por ID, assunto ou descrição..."
+              className="w-full border border-gray-300 rounded-md p-2 text-sm focus:ring-[#367588] focus:border-[#367588]"
+              value={searchTerm}
+              onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
+            />
+            <div className="flex flex-col sm:flex-row gap-2 items-start">
+              <div className="flex items-center gap-2 flex-1">
+                <label className="text-xs text-gray-500 whitespace-nowrap">De:</label>
+                <input
+                  type="date"
+                  className="flex-1 border border-gray-300 rounded-md p-2 text-sm focus:ring-[#367588] focus:border-[#367588]"
+                  value={filterDateFrom}
+                  onChange={handleDateFromChange}
+                />
+              </div>
+              <div className="flex items-center gap-2 flex-1">
+                <label className="text-xs text-gray-500 whitespace-nowrap">Até:</label>
+                <input
+                  type="date"
+                  className="flex-1 border border-gray-300 rounded-md p-2 text-sm focus:ring-[#367588] focus:border-[#367588]"
+                  value={filterDateTo}
+                  onChange={handleDateToChange}
+                />
+              </div>
+              {(filterDateFrom || filterDateTo) && (
+                <button
+                  onClick={() => { setFilterDateFrom(''); setFilterDateTo(''); setDateRangeError(''); setCurrentPage(1); }}
+                  className="text-xs text-gray-400 hover:text-red-500 px-2 py-1 border rounded"
+                >Limpar datas</button>
+              )}
+            </div>
+            {dateRangeError && <p className="text-xs text-red-500">{dateRangeError}</p>}
+          </div>
+
+          <div className="space-y-4">
+            {tickets
+              .filter(ticket => {
+                const term = searchTerm.toLowerCase();
+                const matchesTerm =
+                  (ticket.id && ticket.id.toLowerCase().includes(term)) ||
+                  (ticket.title && ticket.title.toLowerCase().includes(term)) ||
+                  (ticket.descricao_problema && ticket.descricao_problema.toLowerCase().includes(term));
+                const ticketDate = ticket.created_at ? ticket.created_at.split('T')[0] : '';
+                const matchesFrom = filterDateFrom ? ticketDate >= filterDateFrom : true;
+                const matchesTo = filterDateTo ? ticketDate <= filterDateTo : true;
+                return matchesTerm && matchesFrom && matchesTo && !dateRangeError;
+              })
+              .slice((currentPage - 1) * ticketsPerPage, currentPage * ticketsPerPage)
+              .map((ticket) => (
+                <div key={ticket.id} className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <span className={`inline-block px-2 py-1 text-xs font-semibold rounded-full mb-2 ${
+                        ticket.status === 'resolvido' ? 'bg-green-100 text-green-800' :
+                        ticket.status === 'aceito' ? 'bg-blue-100 text-blue-800' :
+                        ticket.status === 'rejeitado' ? 'bg-red-100 text-red-800' :
+                        'bg-yellow-100 text-yellow-800'
+                      }`}>
+                        {ticket.status ? ticket.status.toUpperCase() : 'PENDENTE'}
+                      </span>
+                      <p className="text-sm text-gray-600 font-medium">Setor: {ticket.setor}</p>
+                      <p className="mt-1 text-gray-800">{ticket.descricao_problema}</p>
+                      {(ticket.accepted_at || ticket.resolved_at) && (
+                        <div className="mt-2 text-xs text-gray-500 space-y-1">
+                          {ticket.accepted_at && (
+                            <div>Aceito em: {new Date(ticket.accepted_at).toLocaleString()}</div>
+                          )}
+                          {ticket.accept_notes && <div className="text-blue-600 font-semibold">Obs: {ticket.accept_notes}</div>}
+                          {ticket.deadline && <div className="text-red-500 font-bold">Prazo: {new Date(ticket.deadline).toLocaleString()}</div>}
+                          {ticket.resolved_at && (
+                            <div>Finalizado em: {new Date(ticket.resolved_at).toLocaleString()}</div>
+                          )}
+                        </div>
+                      )}
+
+                      {ticket.resolution_notes && (
+                        <div className="mt-3 bg-green-100 p-2 rounded text-sm text-green-900 border border-green-200">
                           <strong>Parecer da TI:</strong>
                           <p className="mt-1 whitespace-pre-wrap text-green-800">{ticket.resolution_notes}</p>
-                      </div>
-                    )}
-                    
-                    {/* Poke Button */}
-                    {(() => {
+                        </div>
+                      )}
+
+                      {/* Poke Button */}
+                      {(() => {
                         const { canPoke, nextPokeTime } = getPokeStatus(ticket);
                         if (ticket.status !== 'resolvido' && ticket.status !== 'rejeitado') {
-                             return (
-                                <div className="mt-3">
-                                    <button 
-                                        onClick={() => handlePoke(ticket)}
-                                        disabled={!canPoke}
-                                        className={`flex items-center space-x-1 px-3 py-1 text-xs font-bold rounded border transition-colors ${
-                                            canPoke 
-                                            ? 'bg-yellow-100 text-yellow-700 border-yellow-200 hover:bg-yellow-200 cursor-pointer' 
-                                            : 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
-                                        }`}
-                                    >
-                                        <Bell className={`w-3 h-3 ${canPoke ? 'animate-pulse' : ''}`} />
-                                        <span>Cutucar TI {ticket.poke_count > 0 ? `(${ticket.poke_count})` : ''}</span>
-                                    </button>
-                                    {!canPoke && nextPokeTime > 0 && (
-                                        <span className="text-[10px] text-gray-400 ml-1">
-                                            Disponível às {new Date(nextPokeTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
-                                        </span>
-                                    )}
-                                </div>
-                             )
+                          return (
+                            <div className="mt-3">
+                              <button
+                                onClick={() => handlePoke(ticket)}
+                                disabled={!canPoke}
+                                className={`flex items-center space-x-1 px-3 py-1 text-xs font-bold rounded border transition-colors ${
+                                  canPoke
+                                    ? 'bg-yellow-100 text-yellow-700 border-yellow-200 hover:bg-yellow-200 cursor-pointer'
+                                    : 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
+                                }`}
+                              >
+                                <Bell className={`w-3 h-3 ${canPoke ? 'animate-pulse' : ''}`} />
+                                <span>Cutucar TI {ticket.poke_count > 0 ? `(${ticket.poke_count})` : ''}</span>
+                              </button>
+                              {!canPoke && nextPokeTime > 0 && (
+                                <span className="text-[10px] text-gray-400 ml-1">
+                                  Disponível às {new Date(nextPokeTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                </span>
+                              )}
+                            </div>
+                          );
                         }
-                    })()}
+                        return null;
+                      })()}
+                    </div>
+                    <span className="text-xs text-gray-500">
+                      {ticket.created_at ? new Date(ticket.created_at).toLocaleDateString() : ''}
+                    </span>
                   </div>
-                  <span className="text-xs text-gray-500">
-                    {ticket.created_at ? new Date(ticket.created_at).toLocaleDateString() : ''}
-                  </span>
                 </div>
-              </div>
-            ))}
+              ))}
           </div>
+
+          {/* Pagination */}
+          {(() => {
+            const filteredCount = tickets.filter(t => {
+              const term = searchTerm.toLowerCase();
+              const matchesTerm = (t.id?.toLowerCase().includes(term) || t.title?.toLowerCase().includes(term) || t.descricao_problema?.toLowerCase().includes(term));
+              const ticketDate = t.created_at ? t.created_at.split('T')[0] : '';
+              const matchesFrom = filterDateFrom ? ticketDate >= filterDateFrom : true;
+              const matchesTo = filterDateTo ? ticketDate <= filterDateTo : true;
+              return matchesTerm && matchesFrom && matchesTo && !dateRangeError;
+            }).length;
+
+            if (filteredCount <= ticketsPerPage) return null;
+
+            return (
+              <div className="flex justify-center items-center mt-6 gap-2">
+                <button
+                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                  disabled={currentPage === 1}
+                  className="px-3 py-1 border rounded text-sm disabled:opacity-50 hover:bg-gray-100"
+                >
+                  Anterior
+                </button>
+                <span className="text-sm text-gray-600">
+                  Página {currentPage} de {Math.ceil(filteredCount / ticketsPerPage) || 1}
+                </span>
+                <button
+                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, Math.ceil(filteredCount / ticketsPerPage)))}
+                  disabled={currentPage >= Math.ceil(filteredCount / ticketsPerPage)}
+                  className="px-3 py-1 border rounded text-sm disabled:opacity-50 hover:bg-gray-100"
+                >
+                  Próxima
+                </button>
+              </div>
+            );
+          })()}
         </div>
       )}
     </div>

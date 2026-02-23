@@ -1,0 +1,18 @@
+{
+  "id": "13_20260220",
+  "email": "thamires",
+  "nome_usuario": "thamires",
+  "setor": "fiscal",
+  "title": "tarefas",
+  "descricao_problema": "cadsatrar tarefas xyz",
+  "tentativas_anteriores": ".",
+  "screenshot_url": "[\"/uploads/thamires_1771585737027/image.png\",\"/uploads/thamires_1771585737027/certificados_senhas.csv\"]",
+  "status": "resolvido",
+  "upload_folder_ref": "1771585737027",
+  "created_at": "2026-02-20T11:08:57.037Z",
+  "accepted_at": "2026-02-20T11:11:50.751Z",
+  "resolved_at": "2026-02-20T11:12:17.973Z",
+  "last_poke_at": null,
+  "poke_count": 0,
+  "resolution_notes": "feito!"
+}

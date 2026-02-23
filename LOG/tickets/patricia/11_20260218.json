@@ -1,0 +1,18 @@
+{
+  "id": "11_20260218",
+  "email": "patricia",
+  "nome_usuario": "patricia",
+  "setor": "contabil",
+  "title": "teste",
+  "priority": false,
+  "descricao_problema": "teste1",
+  "tentativas_anteriores": "marques da sapucai",
+  "screenshot_url": "[\"/uploads/patricia_1771412792736/image.png\"]",
+  "status": "pendente",
+  "upload_folder_ref": "1771412792736",
+  "created_at": "2026-02-18T11:06:32.768Z",
+  "accepted_at": null,
+  "resolved_at": null,
+  "last_poke_at": null,
+  "poke_count": 0
+}
